@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:latest
+    container_name: neo4j
+    ports:
+      - "7474:7474"  # HTTP port
+      - "7687:7687"  # Bolt port
+    environment:
+      - NEO4J_AUTH=neo4j/StrongPassword123  # Update this to a stronger password
+    volumes:
+      - neo4j_data:/data       # Persistent storage for database data
+      - neo4j_import:/import   # Directory for importing CSV files
+
+volumes:
+  neo4j_data:
+  neo4j_import:
