@@ -1,0 +1,60 @@
+server_uri: bolt://localhost:7687
+admin_user: neo4j
+admin_pass: StrongPassword123
+database: neo4j
+basepath: ./
+
+pre_ingest:
+  - CREATE CONSTRAINT disease_name IF NOT EXISTS FOR (n:Disease) REQUIRE n.name IS UNIQUE;
+files:
+- chunk_size: 100
+  cql: |
+    WITH $dict.rows AS rows
+    UNWIND rows AS row
+    MERGE (n:Disease {name: row.Disease})
+  url: $BASE/Disease_symptom_and_patient_profile_dataset.csvtest_dis.csv
+- chunk_size: 100
+  cql: |-
+    WITH $dict.rows AS rows
+    UNWIND rows AS row
+    MERGE (n:Symptom {})
+    SET n.fever = row.Fever, n.cough = row.Cough, n.fatigue = row.Fatigue, n.difficultyBreathing = row.`Difficulty Breathing`
+  url: $BASE/Disease_symptom_and_patient_profile_dataset.csvtest_dis.csv
+- chunk_size: 100
+  cql: |-
+    WITH $dict.rows AS rows
+    UNWIND rows AS row
+    MERGE (n:Patient {})
+    SET n.age = toIntegerOrNull(row.Age), n.gender = row.Gender, n.bloodPressure = row.`Blood Pressure`, n.cholesterolLevel = row.`Cholesterol Level`
+  url: $BASE/Disease_symptom_and_patient_profile_dataset.csvtest_dis.csv
+- chunk_size: 100
+  cql: |-
+    WITH $dict.rows AS rows
+    UNWIND rows AS row
+    MERGE (n:Outcome {})
+    SET n.result = row.`Outcome Variable`
+  url: $BASE/Disease_symptom_and_patient_profile_dataset.csvtest_dis.csv
+- chunk_size: 100
+  cql: |
+    WITH $dict.rows AS rows
+    UNWIND rows as row
+    MATCH (source:Disease {name: row.Disease})
+    MATCH (target:Symptom {})
+    MERGE (source)-[n:HAS_SYMPTOM]->(target)
+  url: $BASE/Disease_symptom_and_patient_profile_dataset.csvtest_dis.csv
+- chunk_size: 100
+  cql: |
+    WITH $dict.rows AS rows
+    UNWIND rows as row
+    MATCH (source:Disease {name: row.Disease})
+    MATCH (target:Outcome {})
+    MERGE (source)-[n:HAS_OUTCOME]->(target)
+  url: $BASE/Disease_symptom_and_patient_profile_dataset.csvtest_dis.csv
+- chunk_size: 100
+  cql: |
+    WITH $dict.rows AS rows
+    UNWIND rows as row
+    MATCH (source:Patient {})
+    MATCH (target:Disease {name: row.Disease})
+    MERGE (source)-[n:HAS_CONDITION]->(target)
+  url: $BASE/Disease_symptom_and_patient_profile_dataset.csvtest_dis.csv
