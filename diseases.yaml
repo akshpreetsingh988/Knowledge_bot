@@ -24,8 +24,15 @@ files:
   cql: |-
     WITH $dict.rows AS rows
     UNWIND rows AS row
-    MERGE (n:Patient {})
-    SET n.age = toIntegerOrNull(row.Age), n.gender = row.Gender, n.bloodPressure = row.`Blood Pressure`, n.cholesterolLevel = row.`Cholesterol Level`
+    MERGE (n:Demographics {})
+    SET n.age = row.Age, n.gender = row.Gender
+  url: $BASE/./test_dis.csv
+- chunk_size: 100
+  cql: |-
+    WITH $dict.rows AS rows
+    UNWIND rows AS row
+    MERGE (n:HealthIndicator {})
+    SET n.bloodPressure = row.`Blood Pressure`, n.cholesterolLevel = row.`Cholesterol Level`
   url: $BASE/./test_dis.csv
 - chunk_size: 100
   cql: |-
@@ -47,14 +54,22 @@ files:
     WITH $dict.rows AS rows
     UNWIND rows as row
     MATCH (source:Disease {name: row.Disease})
-    MATCH (target:Outcome {})
-    MERGE (source)-[n:HAS_OUTCOME]->(target)
+    MATCH (target:Demographics {})
+    MERGE (source)-[n:HAS_DEMOGRAPHICS]->(target)
   url: $BASE/./test_dis.csv
 - chunk_size: 100
   cql: |
     WITH $dict.rows AS rows
     UNWIND rows as row
-    MATCH (source:Patient {})
-    MATCH (target:Disease {name: row.Disease})
-    MERGE (source)-[n:HAS_CONDITION]->(target)
+    MATCH (source:Disease {name: row.Disease})
+    MATCH (target:HealthIndicator {})
+    MERGE (source)-[n:HAS_LAB]->(target)
+  url: $BASE/./test_dis.csv
+- chunk_size: 100
+  cql: |
+    WITH $dict.rows AS rows
+    UNWIND rows as row
+    MATCH (source:Disease {name: row.Disease})
+    MATCH (target:Outcome {})
+    MERGE (source)-[n:HAS_OUTCOME]->(target)
   url: $BASE/./test_dis.csv
