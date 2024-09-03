@@ -25,7 +25,7 @@ files:
     WITH $dict.rows AS rows
     UNWIND rows AS row
     MERGE (n:Demographics {})
-    SET n.age = row.Age, n.gender = row.Gender
+    SET n.age = toIntegerOrNull(row.Age), n.gender = row.Gender
   url: $BASE/./test_dis.csv
 - chunk_size: 100
   cql: |-
@@ -46,16 +46,16 @@ files:
     WITH $dict.rows AS rows
     UNWIND rows as row
     MATCH (source:Disease {name: row.Disease})
-    MATCH (target:Symptom {})
-    MERGE (source)-[n:HAS_SYMPTOM]->(target)
+    MATCH (target:Demographics {})
+    MERGE (source)-[n:HAS_DEMOGRAPHICS]->(target)
   url: $BASE/./test_dis.csv
 - chunk_size: 100
   cql: |
     WITH $dict.rows AS rows
     UNWIND rows as row
     MATCH (source:Disease {name: row.Disease})
-    MATCH (target:Demographics {})
-    MERGE (source)-[n:HAS_DEMOGRAPHICS]->(target)
+    MATCH (target:Symptom {})
+    MERGE (source)-[n:HAS_SYMPTOM]->(target)
   url: $BASE/./test_dis.csv
 - chunk_size: 100
   cql: |

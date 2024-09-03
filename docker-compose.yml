@@ -7,10 +7,12 @@ services:
       - "7687:7687"  # Bolt port
     environment:
       - NEO4J_AUTH=neo4j/StrongPassword123  # Update this to a stronger password
+      - NEO4JLABS_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
     volumes:
-      - neo4j_data:/data       # Persistent storage for database data
-      - neo4j_import:/import   # Directory for importing CSV files
-
+      - $HOME/neo4j/data:/data
+      - $HOME/neo4j/plugins:/plugins
 volumes:
   neo4j_data:
-  neo4j_import:
+  neo4j_plugins:
+      
