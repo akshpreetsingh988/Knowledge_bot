@@ -126,78 +126,78 @@ if api_key:
             gen.generate_config_yaml(file_name="diseases.yaml")
             
             
-            driver = GraphDatabase.driver(uri, auth=(username , password)) 
-            
-            def fetch_graph_data(): 
-                query = """
-                MATCH (n)-[r]->(m)
-                RETURN n, r, m
-                """
-                with driver.session() as session:
-                    results = session.run(query)
-                    nodes = []
-                    edges = []
-                    for record in results:
-                        n = record["n"]
-                        m = record["m"]
-                        r = record["r"]
-                        nodes.append(n)
-                        nodes.append(m)
-                        edges.append((n.id, m.id, r.type))
-                    # Removing duplicates
-                    nodes = {n.id: n for n in nodes}.values()
-                    return nodes, edges
-            def close_driver():
-                driver.close()
-            import ipdb; ipdb.set_trace()
-            st.title("Neo4j Graph Visualization")
-            nodes, edges = fetch_graph_data()
+        driver = GraphDatabase.driver(uri, auth=(username , password)) 
+        
+        def fetch_graph_data(): 
+            query = """
+            MATCH (n)-[r]->(m)
+            RETURN n, r, m
+            """
+            with driver.session() as session:
+                results = session.run(query)
+                nodes = []
+                edges = []
+                for record in results:
+                    n = record["n"]
+                    m = record["m"]
+                    r = record["r"]
+                    nodes.append(n)
+                    nodes.append(m)
+                    edges.append((n.id, m.id, r.type))
+                # Removing duplicates
+                nodes = {n.id: n for n in nodes}.values()
+                return nodes, edges
+        def close_driver():
+            driver.close()
+        import ipdb; ipdb.set_trace()
+        st.title("Neo4j Graph Visualization")
+        nodes, edges = fetch_graph_data()
 
-            net = Network(height="750px", width="100%", notebook=True)
+        net = Network(height="750px", width="100%", notebook=True)
 
-            # Convert frozenset to a string or list
-            for node in nodes:
-                label = str(node.labels) if isinstance(node.labels, frozenset) else node.labels
-                net.add_node(node.id, label=str(node.id), title=label)  # Ensure everything is JSON serializable
+        # Convert frozenset to a string or list
+        for node in nodes:
+            label = str(node.labels) if isinstance(node.labels, frozenset) else node.labels
+            net.add_node(node.id, label=str(node.id), title=label)  # Ensure everything is JSON serializable
 
-            for edge in edges:
-                net.add_edge(edge[0], edge[1], title=edge[2])
+        for edge in edges:
+            net.add_edge(edge[0], edge[1], title=edge[2])
 
-            # Display the network
-            net.show("graph.html")
-            HtmlFile = open("graph.html", "r", encoding="utf-8")
-            source_code = HtmlFile.read()
-            components.html(source_code, height=800, width=1000)
+        # Display the network
+        net.show("graph.html")
+        HtmlFile = open("graph.html", "r", encoding="utf-8")
+        source_code = HtmlFile.read()
+        components.html(source_code, height=800, width=1000)
 
-            # Close the Neo4j driver when done
-            close_driver()        
-            
-            # ----
-            kg = Neo4jGraph(
-                url=uri, username=username, password=password, database=database
-            )
-            kg.refresh_schema()
-            st.divider() 
-            st.text(textwrap.fill(kg.schema, 60))
-            schema=kg.schema
-            
-            chat_llm = get_llm("gpt3.5", api_key)
-            cypher_prompt = PromptTemplate(
-                input_variables=["schema","question"], 
-                template=CHAT_PROMPT
-            )
-            
-            cypherChain = GraphCypherQAChain.from_llm(
-                chat_llm,
-                graph=kg,
-                verbose=True,
-                cypher_prompt=cypher_prompt,
-                top_k=10 # this can be adjusted also
-            )
-            
-            st.header("Please Enter Your Query")
-            query = st.text_input("Question") 
-            if query : 
-                response = cypherChain.run(query) 
-                st.text(response ) 
-            
+        # Close the Neo4j driver when done
+        close_driver()        
+        
+        # ----
+        kg = Neo4jGraph(
+            url=uri, username=username, password=password, database=database
+        )
+        kg.refresh_schema()
+        st.divider() 
+        st.text(textwrap.fill(kg.schema, 60))
+        schema=kg.schema
+        
+        chat_llm = get_llm("gpt3.5", api_key)
+        cypher_prompt = PromptTemplate(
+            input_variables=["schema","question"], 
+            template=CHAT_PROMPT
+        )
+        
+        cypherChain = GraphCypherQAChain.from_llm(
+            chat_llm,
+            graph=kg,
+            verbose=True,
+            cypher_prompt=cypher_prompt,
+            top_k=10 # this can be adjusted also
+        )
+        
+        st.header("Please Enter Your Query")
+        query = st.text_input("Question") 
+        if query : 
+            response = cypherChain.run(query) 
+            st.text(response ) 
+        
