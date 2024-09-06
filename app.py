@@ -21,7 +21,7 @@ import streamlit.components.v1 as components
 # from neo4j_runway import GraphDataModeler, LLM
 
 #setting environment variable API key
-os.environ['OPENAI_API_KEY'] = 'sk-5tLuQzXGUemKeK54H-jdat1WZs7uFRvYDvWU83p-NZT3BlbkFJ2KPYOXc2YWLMW8bnv30KaxUYJQaAZx8jkPJ-tOMeoA'
+os.environ['OPENAI_API_KEY'] = 'sk-d6n_BBr3lao8vlodMXmJyd0jQSoaTVf9p2vBx2rmAFT3BlbkFJIGZcPixoDbq2bLOs4uL4ymdh1VMGmp2PadmG1V2ZwA'
 
 # Define a function to load the OpenAI API key
 def load_openai_key():
@@ -83,7 +83,7 @@ if api_key:
         
         feedback = st.radio("Did you have more inputs for the current visualization", ("Yes", "No"))
         if feedback == "Yes": 
-            suggestions = st.text_input("Enter what you would like : ") 
+            suggestions = st.text_area("Enter what you would like : ", height=300) 
             if suggestions: 
                 gdm.iterate_model(user_corrections=suggestions)
                 gdm.current_model.visualize()
@@ -196,7 +196,7 @@ if api_key:
         )
         
         st.header("Please Enter Your Query")
-        query = st.text_input("Question") 
+        query = st.text_area("Question", height=300) 
         if query : 
             response = cypherChain.run(query) 
             st.text(response ) 
