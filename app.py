@@ -21,7 +21,7 @@ import streamlit.components.v1 as components
 # from neo4j_runway import GraphDataModeler, LLM
 
 #setting environment variable API key
-os.environ['OPENAI_API_KEY'] = 'sk-d6n_BBr3lao8vlodMXmJyd0jQSoaTVf9p2vBx2rmAFT3BlbkFJIGZcPixoDbq2bLOs4uL4ymdh1VMGmp2PadmG1V2ZwA'
+os.environ['OPENAI_API_KEY'] = '<API_KEY>'
 
 # Define a function to load the OpenAI API key
 def load_openai_key():
