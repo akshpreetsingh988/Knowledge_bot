@@ -5,21 +5,14 @@ database: neo4j
 basepath: ./
 
 pre_ingest:
-  - CREATE CONSTRAINT disease_name IF NOT EXISTS FOR (n:Disease) REQUIRE n.name IS UNIQUE;
-  - CREATE CONSTRAINT outcome_result IF NOT EXISTS FOR (n:Outcome) REQUIRE n.result IS UNIQUE;
+  - CREATE CONSTRAINT disease_diseasename IF NOT EXISTS FOR (n:Disease) REQUIRE n.diseaseName IS UNIQUE;
+  - CREATE CONSTRAINT outcome_outcometype IF NOT EXISTS FOR (n:Outcome) REQUIRE n.outcomeType IS UNIQUE;
 files:
 - chunk_size: 100
   cql: |
     WITH $dict.rows AS rows
     UNWIND rows AS row
-    MERGE (n:Disease {name: row.Disease})
-  url: $BASE/./test_dis.csv
-- chunk_size: 100
-  cql: |-
-    WITH $dict.rows AS rows
-    UNWIND rows AS row
-    MERGE (n:Symptom {})
-    SET n.fever = row.Fever, n.cough = row.Cough, n.fatigue = row.Fatigue, n.difficultyBreathing = row.`Difficulty Breathing`
+    MERGE (n:Disease {diseaseName: row.Disease})
   url: $BASE/./test_dis.csv
 - chunk_size: 100
   cql: |-
@@ -32,6 +25,13 @@ files:
   cql: |-
     WITH $dict.rows AS rows
     UNWIND rows AS row
+    MERGE (n:Symptom {})
+    SET n.fever = toBooleanOrNull(row.Fever), n.cough = toBooleanOrNull(row.Cough), n.fatigue = toBooleanOrNull(row.Fatigue), n.difficultyBreathing = toBooleanOrNull(row.`Difficulty Breathing`)
+  url: $BASE/./test_dis.csv
+- chunk_size: 100
+  cql: |-
+    WITH $dict.rows AS rows
+    UNWIND rows AS row
     MERGE (n:HealthIndicator {})
     SET n.bloodPressure = row.`Blood Pressure`, n.cholesterolLevel = row.`Cholesterol Level`
   url: $BASE/./test_dis.csv
@@ -39,13 +39,13 @@ files:
   cql: |
     WITH $dict.rows AS rows
     UNWIND rows AS row
-    MERGE (n:Outcome {result: row.`Outcome Variable`})
+    MERGE (n:Outcome {outcomeType: row.`Outcome Variable`})
   url: $BASE/./test_dis.csv
 - chunk_size: 100
   cql: |
     WITH $dict.rows AS rows
     UNWIND rows as row
-    MATCH (source:Disease {name: row.Disease})
+    MATCH (source:Disease {diseaseName: row.Disease})
     MATCH (target:Demographics {})
     MERGE (source)-[n:HAS_DEMOGRAPHICS]->(target)
   url: $BASE/./test_dis.csv
@@ -53,7 +53,7 @@ files:
   cql: |
     WITH $dict.rows AS rows
     UNWIND rows as row
-    MATCH (source:Disease {name: row.Disease})
+    MATCH (source:Disease {diseaseName: row.Disease})
     MATCH (target:Symptom {})
     MERGE (source)-[n:HAS_SYMPTOM]->(target)
   url: $BASE/./test_dis.csv
@@ -61,7 +61,7 @@ files:
   cql: |
     WITH $dict.rows AS rows
     UNWIND rows as row
-    MATCH (source:Disease {name: row.Disease})
+    MATCH (source:Disease {diseaseName: row.Disease})
     MATCH (target:HealthIndicator {})
     MERGE (source)-[n:HAS_LAB]->(target)
   url: $BASE/./test_dis.csv
@@ -69,7 +69,7 @@ files:
   cql: |
     WITH $dict.rows AS rows
     UNWIND rows as row
-    MATCH (source:Disease {name: row.Disease})
-    MATCH (target:Outcome {result: row.`Outcome Variable`})
+    MATCH (source:Disease {diseaseName: row.Disease})
+    MATCH (target:Outcome {outcomeType: row.`Outcome Variable`})
     MERGE (source)-[n:HAS_OUTCOME]->(target)
   url: $BASE/./test_dis.csv
